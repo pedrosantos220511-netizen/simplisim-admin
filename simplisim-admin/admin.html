@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin — Simplisim Decorações</title>
+  <link rel="stylesheet" href="css/admin.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase.js"></script>
+</head>
+<body>
+  <div id="loginScreen" class="login-screen">
+    <div class="login-card">
+      <div class="brand-mark">S</div>
+      <h1>Painel Administrativo</h1>
+      <p>Entre para gerenciar o catálogo da Simplisim Decorações.</p>
+      <form id="loginForm">
+        <label>E-mail</label>
+        <input id="email" type="email" placeholder="seu@email.com" required>
+        <label>Senha</label>
+        <input id="password" type="password" placeholder="••••••••" required>
+        <button type="submit" class="primary full">Entrar</button>
+        <div id="loginError" class="error"></div>
+      </form>
+    </div>
+  </div>
+
+  <div id="app" class="app hidden">
+    <aside class="sidebar">
+      <div class="side-brand">
+        <div class="brand-mark small">S</div>
+        <div><strong>Simplisim</strong><span>Admin</span></div>
+      </div>
+      <nav>
+        <button class="nav-item active" data-page="dashboard">⌂ <span>Dashboard</span></button>
+        <button class="nav-item" data-page="produtos">▣ <span>Produtos</span></button>
+        <button class="nav-item" data-page="categorias">◈ <span>Categorias</span></button>
+      </nav>
+      <button id="logoutBtn" class="logout">↪ Sair</button>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <div class="eyebrow">Painel administrativo</div>
+          <h2 id="pageTitle">Dashboard</h2>
+        </div>
+        <div class="user-pill"><span class="dot"></span><span id="userEmail">Admin</span></div>
+      </header>
+
+      <section id="dashboardPage" class="page">
+        <div class="hero">
+          <div>
+            <span class="eyebrow">Visão geral</span>
+            <h3>Controle seu catálogo em um só lugar.</h3>
+            <p>Cadastre produtos, altere preços, envie imagens e controle o que aparece no site.</p>
+          </div>
+          <button class="primary" id="newProductTop">+ Novo produto</button>
+        </div>
+        <div class="stats">
+          <div class="stat"><span>Total de produtos</span><strong id="statTotal">0</strong></div>
+          <div class="stat"><span>Produtos ativos</span><strong id="statActive">0</strong></div>
+          <div class="stat"><span>Produtos inativos</span><strong id="statInactive">0</strong></div>
+          <div class="stat"><span>Categorias</span><strong id="statCategories">0</strong></div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><div><h3>Produtos recentes</h3><p>Últimos itens cadastrados.</p></div><button class="ghost" data-go="produtos">Ver todos</button></div>
+          <div id="recentProducts" class="recent-grid"></div>
+        </div>
+      </section>
+
+      <section id="produtosPage" class="page hidden">
+        <div class="toolbar">
+          <div class="search"><span>⌕</span><input id="searchInput" placeholder="Buscar produto..."></div>
+          <select id="categoryFilter"><option value="">Todas as categorias</option></select>
+          <select id="statusFilter"><option value="">Todos</option><option value="true">Ativos</option><option value="false">Inativos</option></select>
+          <button class="primary" id="newProductBtn">+ Novo produto</button>
+        </div>
+        <div class="panel">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Produto</th><th>Categoria</th><th>Preço</th><th>Status</th><th>Ações</th></tr></thead>
+              <tbody id="productsBody"></tbody>
+            </table>
+          </div>
+          <div id="emptyProducts" class="empty hidden">Nenhum produto encontrado.</div>
+        </div>
+      </section>
+
+      <section id="categoriasPage" class="page hidden">
+        <div class="panel">
+          <div class="panel-head"><div><h3>Categorias</h3><p>Gerencie os nomes e organize os produtos do catálogo.</p></div><button class="primary" id="newCategoryBtn">+ Nova categoria</button></div>
+          <div id="categoriesGrid" class="category-grid"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="modal" class="modal hidden">
+    <div class="modal-box">
+      <div class="modal-head"><div><h3 id="modalTitle">Novo produto</h3><p>Preencha os dados do produto.</p></div><button id="closeModal" class="icon-btn">×</button></div>
+      <form id="productForm">
+        <input id="productId" type="hidden">
+        <div class="form-grid">
+          <div class="field full-field"><label>Nome do produto *</label><input id="productName" required placeholder="Ex.: Arco de flores"></div>
+          <div class="field"><label>Preço *</label><input id="productPrice" type="number" step="0.01" min="0" required placeholder="0,00"></div>
+          <div class="field"><label>Categoria</label><input id="productCategory" list="categoryList" placeholder="Ex.: Casamento"><datalist id="categoryList"></datalist></div>
+          <div class="field full-field"><label>Descrição</label><textarea id="productDescription" rows="4" placeholder="Descrição do produto..."></textarea></div>
+          <div class="field full-field">
+            <label>Imagem</label>
+            <div id="dropZone" class="drop-zone">
+              <input id="productImage" type="file" accept="image/*" hidden>
+              <div class="upload-icon">↑</div><strong>Escolha uma imagem</strong><span>PNG, JPG ou WEBP</span>
+              <button type="button" id="chooseImage" class="ghost">Selecionar arquivo</button>
+            </div>
+            <div id="imagePreview" class="image-preview hidden"><img id="previewImg"><button type="button" id="removeImage" class="remove-image">Remover</button></div>
+          </div>
+          <div class="field switch-field full-field"><label>Produto ativo</label><label class="switch"><input id="productActive" type="checkbox" checked><span></span></label></div>
+        </div>
+        <div id="formError" class="error"></div>
+        <div class="modal-actions"><button type="button" id="cancelBtn" class="ghost">Cancelar</button><button class="primary" type="submit" id="saveBtn">Salvar produto</button></div>
+      </form>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+  <script src="js/admin.js"></script>
+</body>
+</html>
